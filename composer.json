@@ -13,7 +13,7 @@
         "ext-swoole": ">=4.4.8",
         "ext-json": "*",
         "topthink/framework": "^6.0",
-        "symfony/finder": "^4.0",
+        "symfony/finder": "^4.3.2|^5.0",
         "swoole/ide-helper": "^4.3",
         "nette/php-generator": "^3.2",
         "open-smf/connection-pool": "~1.0"
