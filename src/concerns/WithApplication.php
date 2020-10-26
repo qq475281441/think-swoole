@@ -6,6 +6,7 @@ use Closure;
 use Swoole\Server;
 use think\App;
 use think\swoole\App as SwooleApp;
+use think\swoole\Coordinator;
 use think\swoole\pool\Cache;
 use think\swoole\pool\Db;
 use think\swoole\Sandbox;
@@ -22,8 +23,6 @@ trait WithApplication
         'workerStart',
         'workerExit',
     ];
-
-    protected $coordinator = [];
 
     /**
      * @var SwooleApp
@@ -42,6 +41,22 @@ trait WithApplication
     }
 
     /**
+     * @param string $name
+     * @return Coordinator
+     */
+    public function getCoordinator(string $name)
+    {
+        $abstract = "coordinator.{$name}";
+        if (!$this->container->has($abstract)) {
+            $this->container->bind($abstract, function () {
+                return new Coordinator();
+            });
+        }
+
+        return $this->container->make($abstract);
+    }
+
+    /**
      * 触发事件
      * @param $event
      * @param $params
@@ -50,7 +65,7 @@ trait WithApplication
     {
         $this->container->event->trigger("swoole.{$event}", $params);
         if (in_array($event, $this->waitEvents)) {
-            $this->app->getCoordinator($event)->resume();
+            $this->getCoordinator($event)->resume();
         }
     }
 
@@ -73,7 +88,7 @@ trait WithApplication
      */
     protected function waitEvent(string $event, $timeout = -1): bool
     {
-       return $this->app->getCoordinator($event)->yield($timeout);
+        return $this->getCoordinator($event)->yield($timeout);
     }
 
     protected function prepareApplication()
